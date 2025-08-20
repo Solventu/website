@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>F1 Hub - Champions</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='24' font-size='22'%3E%F0%9F%8F%86%3C/text%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+  <script>
+    // Your Firebase config here
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function showLogin() {
+      document.body.innerHTML = `
+        <div class='flex flex-col items-center justify-center min-h-screen bg-gray-50'>
+          <div class='bg-white p-8 rounded-2xl shadow-xl text-center'>
+            <h2 class='text-2xl font-bold mb-4'>Sign in to F1 Hub</h2>
+            <button id='googleLogin' class='bg-red-600 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-red-700 transition'>Sign in with Google</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('googleLogin').onclick = () => {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider);
+      };
+    }
+
+    function showProfile(user) {
+      const profileHtml = `
+        <div class='flex items-center gap-4'>
+          <img src='${user.photoURL}' alt='User' class='w-10 h-10 rounded-full border-2 border-red-600'>
+          <span class='font-bold text-red-600'>${user.displayName}</span>
+          <button id='editProfileBtn' class='bg-black text-white px-4 py-2 rounded-full hover:bg-red-600 transition'>Edit Profile</button>
+          <button id='logoutBtn' class='bg-red-600 text-white px-4 py-2 rounded-full font-bold shadow hover:bg-black transition'>Logout</button>
+        </div>
+        <div id='editProfileModal' class='fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden'>
+          <div class='bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center'>
+            <h2 class='text-xl font-bold mb-4'>Edit Profile</h2>
+            <input id='editName' type='text' class='border px-4 py-2 rounded w-full mb-4' value='${user.displayName}' />
+            <button id='saveProfileBtn' class='bg-red-600 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-red-700 transition'>Save</button>
+            <button id='closeProfileBtn' class='ml-4 px-6 py-2 rounded-full border border-gray-300'>Cancel</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('profileArea').innerHTML = profileHtml;
+      document.getElementById('logoutBtn').onclick = () => {
+        auth.signOut().then(() => {
+          window.location.href = 'index.html';
+        }).catch((error) => {
+          alert('Logout failed: ' + error.message);
+        });
+      };
+      document.getElementById('editProfileBtn').onclick = () => {
+        document.getElementById('editProfileModal').classList.remove('hidden');
+      };
+      document.getElementById('closeProfileBtn').onclick = () => {
+        document.getElementById('editProfileModal').classList.add('hidden');
+      };
+      document.getElementById('saveProfileBtn').onclick = () => {
+        const newName = document.getElementById('editName').value;
+        user.updateProfile({ displayName: newName }).then(() => {
+          document.getElementById('editProfileModal').classList.add('hidden');
+          location.reload();
+        });
+      };
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        showLogin();
+      } else {
+        showProfile(user);
+      }
+    });
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+  <!-- Navbar -->
+  <header class="bg-black sticky top-0 z-50 shadow-md">
+    <nav class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center p-2 md:p-4 text-white">
+      <h1 class="text-2xl font-extrabold tracking-wide mb-2 md:mb-0">🏎️ F1 Hub</h1>
+      <div class="space-x-0 md:space-x-6 flex flex-col md:flex-row items-center w-full md:w-auto text-lg">
+        <a href="homepage.html" class="hover:text-red-500 transition px-2 py-1 md:px-0 md:py-0">Home</a>
+        <a href="races.html" class="hover:text-red-500 transition px-2 py-1 md:px-0 md:py-0">Races</a>
+        <a href="drivers.html" class="hover:text-red-500 transition px-2 py-1 md:px-0 md:py-0">Champions</a>
+        <a href="about.html" class="hover:text-red-500 transition px-2 py-1 md:px-0 md:py-0">About</a>
+        <button id="logoutBtn" class="bg-red-600 text-white px-4 py-2 rounded-full font-bold shadow hover:bg-red-700 transition w-full md:w-auto">Logout</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-gradient-to-r from-red-600 via-red-500 to-red-400 text-white text-center py-20 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-30 pointer-events-none animate-pulse">
+      <svg class="w-full h-full" viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#fff" fill-opacity="0.2" d="M0,160L48,170.7C96,181,192,203,288,186.7C384,171,480,117,576,117.3C672,117,768,171,864,186.7C960,203,1056,181,1152,154.7C1248,128,1344,96,1392,80L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+      </svg>
+    </div>
+    <h1 class="text-5xl md:text-6xl font-extrabold mb-6 animate-bounce drop-shadow-lg">F1 Champions</h1>
+    <p class="text-lg opacity-90 mb-6 animate-fade-in">From 1950 to 2024</p>
+    <a href="races.html" class="inline-block bg-white text-red-600 font-bold px-8 py-3 rounded-full shadow-lg hover:bg-red-600 hover:text-white transition-all duration-300 animate-fade-in">View Races</a>
+  </section>
+
+  <!-- Champions Grid -->
+  <section class="max-w-4xl mx-auto my-12 p-4 bg-white/80 backdrop-blur-lg shadow-2xl rounded-2xl transform transition hover:scale-105 duration-300 animate-fade-in">
+    <div id="driversContainer" class="w-full text-sm md:text-base animate-fade-in">
+      <!-- JS will populate -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black text-white text-center py-4 mt-12">
+    <p>© Erik 2025</p>
+  </footer>
+
+  <script src="drivers.js"></script>
+</body>
+</html>

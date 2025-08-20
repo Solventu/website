@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account - F1 Hub</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='24' font-size='22'%3E%F0%9F%94%92%3C/text%3E%3C/svg%3E">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-red-600 via-red-500 to-red-400 min-h-screen flex items-center justify-center relative overflow-hidden">
+  <!-- Blurred circles background -->
+  <div class="absolute top-10 left-10 w-40 h-40 bg-blue-400 rounded-full opacity-40 blur-2xl"></div>
+  <div class="absolute bottom-10 right-10 w-48 h-48 bg-orange-400 rounded-full opacity-40 blur-2xl"></div>
+
+  <div class="bg-white/80 backdrop-blur-lg p-10 rounded-2xl shadow-2xl text-center w-full max-w-md animate-fade-in z-10">
+    <h1 class="text-3xl font-extrabold text-red-600 mb-6">Create Account</h1>
+    <form id="registerForm" class="space-y-6 w-full">
+      <input type="email" id="email" placeholder="Email" required class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-red-400" />
+      <input type="password" id="password" placeholder="Password" required class="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-red-400" />
+      <button id="submitButton" type="submit" class="bg-red-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-red-700 transition w-full">Create Account</button>
+      <div id="registerError" class="text-red-600 font-bold mt-2"></div>
+    </form>
+    <div class="flex flex-col md:flex-row gap-4 mt-6 justify-center w-full">
+      <button id="googleLogin" class="bg-white text-gray-700 px-6 py-2 rounded-full font-bold shadow hover:bg-gray-100 border flex items-center gap-2 w-full md:w-auto"><span>G</span> Google</button>
+      <button id="facebookLogin" class="bg-white text-gray-700 px-6 py-2 rounded-full font-bold shadow hover:bg-gray-100 border flex items-center gap-2 w-full md:w-auto"><span>f</span> Facebook</button>
+    </div>
+    <div class="mt-6 text-gray-700">Have an account? <a href="login.html" class="text-red-600 font-bold hover:underline">Login Here</a></div>
+  </div>
+  <script type="module" src="register.js" defer></script>
+  <script type="module" src="login.js" defer></script>
+  <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+const firebaseConfig = {
+    apiKey: "AIzaSyB_pLv78BHm6a7LWH4vyQYyp4xwUArV6SM",
+    authDomain: "f1-hub-d46bf.firebaseapp.com",
+    projectId: "f1-hub-d46bf",
+    storageBucket: "f1-hub-d46bf.firebasestorage.app",
+    messagingSenderId: "731892543238",
+    appId: "1:731892543238:web:de7ad915f4031476fc7887",
+    measurementId: "G-RDP5XVD7SV"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const submitButton = document.getElementById("submitButton");
+submitButton.addEventListener("click", function (event) {
+    event.preventDefault();
+    const emailInput = document.getElementById('email').value;
+    const passwordInput = document.getElementById('password').value;
+    const errorDiv = document.getElementById('registerError');
+    errorDiv.textContent = '';
+    createUserWithEmailAndPassword(auth, emailInput, passwordInput)
+      .then((userCredential) => {
+        errorDiv.textContent = "Account created successfully! Redirecting to homepage...";
+        errorDiv.classList.remove('text-red-600');
+        errorDiv.classList.add('text-green-600');
+        setTimeout(() => {
+          window.location.href = "homepage.html";
+        }, 1200);
+      })
+      .catch((error) => {
+        if (error.code === 'auth/email-already-in-use') {
+          errorDiv.textContent = "An account with this email already exists.";
+        } else if (error.code === 'auth/weak-password') {
+          errorDiv.textContent = "Password is too weak. Please use at least 6 characters.";
+        } else {
+          errorDiv.textContent = error.message;
+        }
+        errorDiv.classList.remove('text-green-600');
+        errorDiv.classList.add('text-red-600');
+      });
+});
+</script>
+</body>
+</html>
